@@ -1,0 +1,9 @@
+v 1.0.0
+d lpoly2. Perform two-dimensional local polynomial regression
+d Meiting Wang
+d Institute for Economic and Social Research, Jinan University
+d Guangzhou, China
+d wangmeiting92@gmail.com
+
+f lpoly2.ado
+f lpoly2.sthlp
