@@ -1,42 +1,10 @@
-*！ description: do the local polynomial regression of Y on X and V with the grid of x and v
-*! Meiting Wang
-*! wangmeiting92@gmail.com
-*! Oct 23, 2021
-
-
-****** 参数设置
-clear all
-macro drop _all
-cls
-global n = 10000
-global h = 0.1 //bandwidth
-global p = 3 //degree
-global kernel "gaussian" //kernel function(the function written must be one of gaussian, epanechnikov, epan2, biweight, cosine, rectangle, triangle, parzen, gaussian_m)
-global seed = 123456
-
-
-****** 生成测试数据
-if "$seed" != "" {
-	set seed $seed
-}
-set obs $n
-gen X = rnormal()
-gen V = rnormal()
-gen Y = 1 + 5*X + 3*V + 2*X*V + rnormal()
-range x -1 1 50
-range v 0 1 50
-order Y X V x v
-save testdata.dta, replace
-
-
-****** 调入 Mata 函数(这个函数能计算 two dimensional 的 local polynomial regression，并把结果储存在 Stata 数据集的对应变量中)
 mata:
-void function two_dimen_lpoly(
-	string scalar Y_var, //dependent variable
-	string scalar X_var, //independent variable 1
-	string scalar V_var, //independent variable 2
-	string scalar x_var, //grid point 1(the missing value must be at the end, if any.)
-	string scalar v_var, //grid point 2(the missing value must be at the end, if any.)
+real matrix function two_dimen_lpoly(
+	real colvector Y_var, //dependent variable
+	real colvector X_var, //independent variable 1
+	real colvector V_var, //independent variable 2
+	real colvector x_var, //grid point 1(the missing value must be at the end, if any.)
+	real colvector v_var, //grid point 2(the missing value must be at the end, if any.)
 	string scalar kernel, //kernel function(the function written must be one of the series of functions specified in the program)
 	real scalar h, //bandwidth(bandwidth needs to be greater than 0)
 	real scalar p) //degree(degree needs to be a non-negative integer)
@@ -51,19 +19,14 @@ void function two_dimen_lpoly(
 		exit(9999)
 	} //保证 p 为非负整数
 
-	/* 得到没有缺漏值的 Y_raw X_raw V_raw x v，且 listwise(Y_raw X_raw V_raw) 和 listwise(x v) */
-	Y_raw = st_data(.,Y_var)
-	X_raw = st_data(.,X_var)
-	V_raw = st_data(.,V_var)
-	x = st_data(.,x_var)
-	v = st_data(.,v_var)
-	Y_X_V_nomiss = (Y_raw:!=.):&(X_raw:!=.):&(V_raw:!=.)
-	x_v_nomiss = (x:!=.):&(v:!=.)
-	Y_raw = select(Y_raw,Y_X_V_nomiss)
-	X_raw = select(X_raw,Y_X_V_nomiss)
-	V_raw = select(V_raw,Y_X_V_nomiss)
-	x = select(x,x_v_nomiss)
-	v = select(v,x_v_nomiss)
+	/* 得到没有缺漏值的 Y_raw X_raw V_raw x v，(Y_raw X_raw V_raw) 匹配，(x v)匹配 */
+	Y_X_V_nomiss = (Y_var:!=.):&(X_var:!=.):&(V_var:!=.)
+	x_v_nomiss = (x_var:!=.):&(v_var:!=.)
+	Y_raw = select(Y_var,Y_X_V_nomiss)
+	X_raw = select(X_var,Y_X_V_nomiss)
+	V_raw = select(V_var,Y_X_V_nomiss)
+	x = select(x_var,x_v_nomiss)
+	v = select(v_var,x_v_nomiss)
 
 	/* 得到 q */
 	q = rows(x)
@@ -172,22 +135,14 @@ void function two_dimen_lpoly(
 		BETA[i,.] = beta'
 	}
 
-	/* 将 BETA 转化为 Stata 内存中的变量(beta00 beta10 beta01 ... betap0 .. beta0p) */
-	varnames = "beta00"
+	/* 得到符合 derivative 的 BETA(其列分别对应 beta00 beta10 beta01 ... betap0 .. beta0p) */
+	multiplier = 1
 	for (s=1; s<=p; s++) {
-		varnames = varnames,(J(1,s+1,"beta"):+strofreal(s..0):+strofreal(0..s))
+		multiplier = multiplier, (factorial(s..0):*factorial(0..s):/h^s)
 	}
-	st_store((1,rows(BETA)), st_addvar("double",varnames), BETA)
+	BETA = BETA * diag(multiplier)
+
+	/* 返回 BETA */
+	return(BETA)
 }
 end
-
-
-****** 使用函数
-cls
-use testdata,clear
-replace Y = . in 2
-sum
-mata: two_dimen_lpoly("Y","X","V","x","v","gaussian_m",0.1,1)
-
-// lpoly1 Y X, at(x) bwidth(0.1) degree(0) kernel(gaussian_m)
-l x v beta* if x!=.

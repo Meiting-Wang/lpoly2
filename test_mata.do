@@ -1,3 +1,9 @@
+*！ description: do the local polynomial regression of Y on X and V with the grid of x and v
+*! Meiting Wang
+*! wangmeiting92@gmail.com
+*! Oct 25, 2021
+
+
 ****** 参数设置
 clear all
 macro drop _all
@@ -23,9 +29,26 @@ range v 0 1 $grid_num
 order Y X V x v
 
 
-****** lpoly2 命令的使用
+****** 调入 Mata 函数
+do two_dimen_lpoly.mata
+lmbuild lmylib, replace
+
+
+****** 使用 Mata 函数
 timer clear 1
 timer on 1
-lpoly2 Y X V, at(x v) kernel($kernel) bwidth($h) degree($p)
+mata:
+Y_var = st_data(.,"Y")
+X_var = st_data(.,"X")
+V_var = st_data(.,"V")
+x_var = st_data(.,"x")
+v_var = st_data(.,"v")
+two_dimen_lpoly(Y_var,X_var,V_var,x_var,v_var,"$kernel",$h,$p)
+end
 timer off 1
 timer list
+
+
+
+
+
