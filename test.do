@@ -22,7 +22,6 @@ range x -1 1 $grid_num
 range v 0 1 $grid_num
 order Y X V x v
 
-
 ****** lpoly2 命令的使用
 timer clear 1
 timer on 1
