@@ -5,7 +5,7 @@ real matrix function two_dimen_lpoly(
 	real colvector V_var, //independent variable 2
 	real colvector x_var, //grid point 1(the missing value must be at the end, if any.)
 	real colvector v_var, //grid point 2(the missing value must be at the end, if any.)
-	string scalar kernel, //kernel function(the function written must be one of the series of functions specified in the program)
+	string scalar kernel, //kernel function(the function written must be one of the gaussian, epanechnikov, epan2, biweight, cosine, rectangle, triangle, parzen, gaussian_m)
 	real scalar h, //bandwidth(bandwidth needs to be greater than 0)
 	real scalar p) //degree(degree needs to be a non-negative integer)
 {

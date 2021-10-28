@@ -1,8 +1,9 @@
 {smcl}
 {right:Created time: Oct 24, 2021}
+{right:Updated time: Oct 28, 2021}
 {* -----------------------------title------------------------------------ *}{...}
 {p 0 17 2}
-{bf:[W-21] lpoly2} {hline 2} Perform two-dimensional local polynomial regression. You can view source code in {browse "https://github.com/Meiting-Wang/lpoly2":github}.
+{bf:[W-21] lpoly2} {hline 2} Perform a two-dimensional local polynomial regression. You can view source code in {browse "https://github.com/Meiting-Wang/lpoly2":github}.
 
 
 {* -----------------------------Syntax------------------------------------ *}{...}
@@ -19,6 +20,7 @@
 {help lpoly2##Description:Description}{break}
 {help lpoly2##Options:Options}{break}
 {help lpoly2##Kernel:Kernels}{break}
+{help lpoly2##Mata_function:Mata function}{break}
 {help lpoly2##Examples:Examples}{break}
 {help lpoly2##Author:Author}{break}
 {help lpoly2##Also_see:Also see}{break}
@@ -56,10 +58,10 @@ It is worth noting that this command can be only used in version 16.0 or later.
 {marker Kernel}{title:Kernels}
 
 {synoptset 20}{...}
-{synopthdr :kernel}
+{synopthdr :kernels}
 {synoptline}
-{synopt :{opt gaussian}}Gaussian kernel function; the default{p_end}
 {synopt :{opt gaussian_m}}Modified gaussian kernel function for test{p_end}
+{synopt :{opt gaussian}}Gaussian kernel function; the default{p_end}
 {synopt :{opt epanechnikov}}Epanechnikov kernel function{p_end}
 {synopt :{opt epan2}}alternative Epanechnikov kernel function{p_end}
 {synopt :{opt biweight}}biweight kernel function{p_end}
@@ -70,15 +72,68 @@ It is worth noting that this command can be only used in version 16.0 or later.
 {synoptline}
 
 
+{* -----------------------------Mata function------------------------------------ *}{...}
+{marker Mata_function}{title:Mata function}
+
+{p 4 4 2}
+In addition to the command {cmd:lpoly2}, we also provide the Mata function {cmd:two_dimen_lpoly()} to perform a two-dimensional local polynomial regression:
+
+{col 5}{bf:real matrix function two_dimen_lpoly(}
+	{col 9}{bf:real colvector Y_var,}
+	{col 9}{bf:real colvector X_var,}
+	{col 9}{bf:real colvector V_var,}
+	{col 9}{bf:real colvector x_var,}
+	{col 9}{bf:real colvector v_var,}
+	{col 9}{bf:string scalar kernel,}
+	{col 9}{bf:real scalar h,}
+	{col 9}{bf:real scalar p)}
+{col 5}{bf:{c -(}}
+	{col 9}{bf:......}
+{col 5}{bf:{c )-}}
+
+{p 4 4 2}
+The details of the function arguments are as follows:
+
+{synoptset 10}{...}
+{synopthdr :arguments}
+{synoptline}
+{synopt :{opt Y_var}}dependent variable{p_end}
+{synopt :{opt X_var}}independent variable 1{p_end}
+{synopt :{opt V_var}}independent variable 2{p_end}
+{synopt :{opt x_var}}grid point 1(the missing value must be at the end, if any){p_end}
+{synopt :{opt v_var}}grid point 2(the missing value must be at the end, if any){p_end}
+{synopt :{opt kernel}}kernel function(the function written must be one of the {help lpoly2##Kernel:kernel functions}){p_end}
+{synopt :{opt h}}bandwidth(needs to be greater than 0){p_end}
+{synopt :{opt p}}degree(needs to be a non-negative integer){p_end}
+{synoptline}
+{p 4 4 2}{it:Notes:} Before using this function, we should first convert the variables in the data into a column vector in Mata like {cmd:Y_var = st_data(.,"Y")}.{p_end}
+
+{p 4 4 2}
+Finally, the function will return a matrix corresponding to {bf:beta00}, {bf:beta10}, {bf:beta01}, ..., {bf:betap0}, ..., {bf:beta0p} above column by column.
+
+
 {* -----------------------------Examples------------------------------------ *}{...}
 {marker Examples}{title:Examples}
 
-{p 4 4 2}Do two-dimensional local polynomial regression of Y on X, V at x, v{p_end}
+{p 4 4 2}Do a two-dimensional local polynomial regression of Y on X, V at x, v:{p_end}
+
 {p 8 10 2}. {bf:lpoly2 Y X V, at(x v) bwidth(0.1) degree(3) kernel(gaussian)}{p_end}
 
-{p 4 4 2}Choose specified variables to keep{p_end}
+{p 4 4 2}Choose specified variables to keep:{p_end}
+
 {p 8 10 2}. {bf:lpoly2 Y X V, at(x v) bwidth(0.1) degree(3) kernel(gaussian) keep(beta00 beta10 beta01)}{p_end}
 {p 8 10 2}. {bf:lpoly2 Y X V, at(x v) bwidth(0.1) degree(3) kernel(gaussian) keep(beta00-beta01)}{p_end}
+
+{p 4 4 2}Do a two-dimensional local polynomial regression with the Mata function {cmd:two_dimen_lpoly()}:{p_end}
+
+{p 10 12 2}{bf:mata:}{p_end}
+{p 12 14 2}{bf:Y_var = st_data(.,"Y")}{p_end}
+{p 12 14 2}{bf:X_var = st_data(.,"X")}{p_end}
+{p 12 14 2}{bf:V_var = st_data(.,"V")}{p_end}
+{p 12 14 2}{bf:x_var = st_data(.,"x")}{p_end}
+{p 12 14 2}{bf:v_var = st_data(.,"v")}{p_end}
+{p 12 14 2}{bf:BETA = two_dimen_lpoly(Y_var, X_var, V_var, x_var, v_var, "gaussian", 0.1, 3)}{p_end}
+{p 10 12 2}{bf:end}{p_end}
 
 
 {* -----------------------------Author------------------------------------ *}{...}

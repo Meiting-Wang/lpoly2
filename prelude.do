@@ -191,3 +191,7 @@ mata: two_dimen_lpoly("Y","X","V","x","v","gaussian_m",0.1,1)
 
 // lpoly1 Y X, at(x) bwidth(0.1) degree(0) kernel(gaussian_m)
 l x v beta* if x!=.
+
+
+****** 删除临时数据
+erase testdata.dta
