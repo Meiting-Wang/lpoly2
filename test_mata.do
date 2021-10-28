@@ -11,7 +11,7 @@ cls
 global n = 10*200
 global h = 0.1 //bandwidth
 global p = 3 //degree
-global grid_num = 50*200
+global grid_num = 50
 global kernel "gaussian" //kernel function(the function written must be one of gaussian, epanechnikov, epan2, biweight, cosine, rectangle, triangle, parzen, gaussian_m)
 global seed = 123456
 
@@ -31,7 +31,8 @@ order Y X V x v
 
 ****** 调入 Mata 函数
 do two_dimen_lpoly.mata
-lmbuild lmylib, replace
+mata: mata mosave two_dimen_lpoly(), replace
+// lmbuild lmylib, replace
 
 
 ****** 使用 Mata 函数
