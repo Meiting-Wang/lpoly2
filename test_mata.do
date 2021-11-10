@@ -32,7 +32,7 @@ order Y X V x v
 ****** 调入 Mata 函数
 do two_dimen_lpoly.mata
 mata: mata mosave two_dimen_lpoly(), replace
-// lmbuild lmylib, replace
+lmbuild ltwo_dimen_lpoly, replace dir(.)
 
 
 ****** 使用 Mata 函数
